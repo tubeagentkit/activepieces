@@ -17,8 +17,8 @@ export const listChannelVideosAction = createAction({
   props: {
     channel: Property.ShortText({
       displayName: 'Channel',
-      description: 'Channel @handle, channel URL, or channel ID (UC...).',
-      required: true,
+      description: 'Channel @handle, channel URL, or channel ID (UC...). Required unless a continuation token is given.',
+      required: false,
     }),
     continuation: Property.ShortText({
       displayName: 'Continuation Token',
@@ -28,6 +28,9 @@ export const listChannelVideosAction = createAction({
   },
   async run(context) {
     const { channel, continuation } = context.propsValue;
+    if (!channel && !continuation) {
+      throw new Error('Provide a channel for the first page, or a continuation token for later pages.');
+    }
     return getYoutubeTranscriptRequest(context.auth.secret_text, '/channel/videos', {
       // The API takes either a channel (first page) or a continuation token (later pages).
       channel: continuation ? undefined : channel,
